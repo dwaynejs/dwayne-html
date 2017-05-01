@@ -1,68 +1,38 @@
-# dwayne-inject-local-constants
+# dwayne-html
 
 ### Why?
 
-The plugin is needed for declaring constant locals without
-explicitly setting them in the constructor. It is especially
-useful when you need some constants (like `moment`, `lodash`, custom
-constants like `i18n`, etc) in multiple (if not even all) blocks and
-writing `globals.moment` or `globals._` all the time is no pleasure
-at all.
+The plugin is needed for inserting generated html into elements. You
+may also transform it (sanitize for example) before inserting it.
 
-### Installation
+Be aware that generated html may contain dangerous scripts!
 
 ```bash
-$ npm install --save dwayne-inject-local-constants
+$ npm install --save dwayne-html
 ```
 
 ### Usage
 
-```html
-<!-- User/index.html -->
-
-<div class="user">
-  <span class="name">
-    {_.truncate(globals.user.name, { length: 15 })}
-  </span>
-  <span class="registration-date">
-    {moment(globals.user.regDate).format('MMMM Do YYYY')}
-  </span>
-</div>
-```
-
 ```js
-// User/index.js
-
 import { Block } from 'dwayne';
-import _ from 'lodash';
-import moment from 'moment';
-import template from './index.html';
-import injectConstants from 'dwayne-inject-local-constants';
+import sanitizeHtml from 'sanitize-html';
+import html from 'dwayne-html';
 
-class User extends Block {
-  static template = template;
-}
-
-Block.block('User', User.wrap(
-  injectConstants({
-    _,
-    moment
-  })
-));
-
-// or if you need them in all blocks (which is more probable)
-
-Block.beforeRegisterBlock((Block) => {
-  return Block.wrap(
-    injectConstants({
-      _,
-      moment
-    })
-  );
-});
+Block.mixin('html', html());
+Block.mixin('sanitized-html', html((html) => {
+  return sanitizeHtml(html, options);
+}));
 ```
 
-Note that the constants are declared after `Block#constructor`,
-because they are constants and they are not needed in watching.
-But you still can use them in the template or class methods
-(`Block#afterConstruct` and later).
+```html
+<div html="{html}"/>
+<div sanitized-html="{html}"/>
+```
+
+### API
+
+##### html(transformFn = identity)
+
+The function returns mixin wrapper (you must wrap some mixin class -
+usually Dwayne `Mixin` class in order to use it). The only argument
+is used for transforming html before inserting it.

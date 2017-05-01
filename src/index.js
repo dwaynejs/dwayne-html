@@ -1,13 +1,18 @@
-export default (transformFunction = identity) => {
+export default (transformFn = identity) => {
   return (Mixin) => {
     return class extends Mixin {
       afterUpdate(value) {
-        const { elem } = this;
-        const html = value == null
-          ? ''
-          : transformFunction(value);
+        this.elem.html(
+          value == null
+            ? ''
+            : transformFn(value)
+        );
+      }
 
-        elem.html(html);
+      beforeRemove(isElementRemoved) {
+        if (!isElementRemoved) {
+          this.elem.html('');
+        }
       }
     };
   };
