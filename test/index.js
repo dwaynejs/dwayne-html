@@ -1,58 +1,33 @@
-import { Block, Mixin, initApp, doc } from 'dwayne';
+import { initApp } from 'dwayne-test-utils';
 import { strictEqual } from 'assert';
+import { Block, Mixin } from 'dwayne';
 import html from '../src';
 
+let a = {};
+let b = {};
+let remove;
+
 class App extends Block {
-  static template = '<div html="{html}" d-elem="div"/>';
+  static template = html`
+    <div html="{value}"/>
+    <div html-transformed="{value}"/>
+  `;
+
+  value = '<i>123</i>';
 }
 
 Block.mixin('html', Mixin.wrap(html()));
+Block.mixin('html-transformed', Mixin.wrap(
+  html((html) => (
+    `<span>${ html }</span>`
+  ))
+));
 
 describe('it should test html mixin', () => {
-  let app;
+  before(remove = initApp(App));
+  after(remove);
 
-  before((done) => {
-    Block.block('App', App.wrap(
-      afterRenderWrapper((block) => {
-        app = block;
-        done();
-      })
-    ));
-
-    initApp('App', doc.create('div'));
-  });
-
-  it('should inject html into the element', (done) => {
-    const { div } = app;
-
-    strictEqual(div.html(), '');
-
-    app.html = '<div><span></span><input></div>';
-
-    deferTest(done, () => {
-      strictEqual(div.html(), app.html);
-    });
+  it('should inject html into the element', () => {
+    strictEqual($container.html(), '<div><i>123</i></div><div><span><i>123</i></span></div>');
   });
 });
-
-function afterRenderWrapper(cb) {
-  return (Block) => {
-    return class extends Block {
-      afterRender() {
-        cb(this);
-        super.afterRender();
-      }
-    };
-  };
-}
-
-function deferTest(done, test) {
-  setTimeout(() => {
-    try {
-      test();
-      done();
-    } catch (err) {
-      done(err);
-    }
-  }, 0);
-}
