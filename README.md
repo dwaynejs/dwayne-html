@@ -14,25 +14,20 @@ $ npm install --save dwayne-html
 ### Usage
 
 ```js
-import { Block } from 'dwayne';
 import sanitizeHtml from 'sanitize-html';
-import html from 'dwayne-html';
+import Html from 'dwayne-html';
 
-Block.mixin('html', html());
-Block.mixin('sanitized-html', html((html) => {
-  return sanitizeHtml(html, options);
-}));
+Html.transform = sanitizeHtml;
 ```
 
 ```html
-<div html="{html}"/>
-<div sanitized-html="{html}"/>
+<script>
+  import Html from 'dwayne-html';
+</script>
+
+<div Html="{html}"/>
 ```
 
 ### API
 
-##### html(transformFn = identity)
-
-The function returns mixin wrapper (you must wrap some mixin class -
-usually Dwayne `Mixin` class in order to use it). The only argument
-is used for transforming html before inserting it.
+Set `Html.transform` to the function that transforms the html.

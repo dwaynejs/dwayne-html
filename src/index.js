@@ -1,23 +1,21 @@
-export default (transformFn = identity) => {
-  return (Mixin) => {
-    return class extends Mixin {
-      afterUpdate(value) {
-        this.elem.html(
-          value == null
-            ? ''
-            : transformFn(value)
-        );
-      }
+import { Mixin } from 'dwayne';
 
-      beforeRemove(isElementRemoved) {
-        if (!isElementRemoved) {
-          this.elem.html('');
-        }
-      }
-    };
-  };
-};
+export default class Html extends Mixin {
+  static transform(html) {
+    return html;
+  }
 
-function identity(html) {
-  return html;
+  afterUpdate(value) {
+    this.elem.html(
+      value == null
+        ? ''
+        : this.constructor.transform(value)
+    );
+  }
+
+  beforeRemove(isElementRemoved) {
+    if (!isElementRemoved) {
+      this.elem.html('');
+    }
+  }
 }
